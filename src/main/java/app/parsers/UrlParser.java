@@ -1,10 +1,6 @@
 package app.parsers;
 
-import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.text.DateFormatSymbols;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,29 +11,19 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import javax.imageio.ImageIO;
-
 public class UrlParser {
-    private String year;
-    private String month;
-    private String resolution;
 
     private String url;
-    private List<String> imgLinks;
 
-    public UrlParser(String year, String month, String resolution) {
-        this.year = year;
-        this.month = month;
-        this.resolution = resolution;
-        imgLinks = new ArrayList<>();
-
-        makeUrl();
-        parseHtml();
-        saveImages();
+    public UrlParser(String year, String month) {
+        setUrl(year, month);
     }
 
-    private void makeUrl()
-    {
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String year, String month) {
         String parsedMonth = Integer.valueOf(month) - 1 > 0 ?
                 Integer.valueOf(month) - 1 < 10 ? "0" + (Integer.valueOf(month) - 1) :
                         Integer.toString(Integer.valueOf(month) - 1) : Integer.toString(12);
@@ -51,8 +37,10 @@ public class UrlParser {
                 + "/desktop-wallpaper-calendars-" + monthName.toLowerCase() + "-" + year + "/";
     }
 
-    private void parseHtml()
+    public List<String> parseUrl(String resolution)
     {
+        List<String> imgLinks =  new ArrayList<>();
+
         try {
             Document doc = Jsoup.connect(url).get();
 
@@ -78,30 +66,9 @@ public class UrlParser {
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("HTTP Status 404 Not Found");
         }
-    }
 
-    private void saveImages()
-    {
-        URL url;
-        BufferedImage img;
-        File file;
-
-        for (String href : imgLinks)
-        {
-            try {
-                url = new URL(href);
-                img = ImageIO.read(url);
-
-                file = new File("F:\\" + href.substring(href.lastIndexOf('/') + 1));
-                ImageIO.write(img, href.substring(href.lastIndexOf('.') + 1), file);
-
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+        return imgLinks;
     }
 }
